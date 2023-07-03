@@ -1,0 +1,41 @@
+FROM centos:7
+
+LABEL maintainer="useok"
+LABEL description="Base Image for BigData Cluster"
+
+WORKDIR /home/ubuntu
+
+COPY cm6 /root/cm6
+
+RUN yum update -y
+RUN yum install wget -y
+RUN yum install vim -y
+RUN yum install openssh-server openssh-clients openssh-askpass -y
+RUN yum install initscripts -y
+RUN yum install net-tools -y 
+RUN yum -y install java-1.8.0-openjdk-devel
+RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_dsa
+RUN cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""
+RUN ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""
+RUN ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
+RUN echo "/usr/sbin/sshd">>~/.bashrc
+
+RUN yum -y install httpd
+
+RUN mkdir -p /var/www/html/cloudera-repos/cm6
+RUN tar xvfz /root/cm6/cm6.3.1-redhat7.tar.gz -C /var/www/html/cloudera-repos/cm6 --strip-components=1
+RUN cp /root/cm6/allkeys.asc /var/www/html/cloudera-repos/cm6
+
+RUN echo -e "[cloudera-repo]\nname=cloudera-manager\nbaseurl=http://3.35.20.140/cloudera-repos/cm6/\nenabled=1\ngpgcheck=0">>/etc/yum.repos.d/cloudera-manager.repo
+
+RUN mkdir /var/www/html/cloudera-repos/cdh
+RUN cp /root/cm6/CDH-6.3.2-1.cdh6.3.2.p0.1605554-el7.parcel /var/www/html/cloudera-repos/cdh
+RUN cp /root/cm6/CDH-6.3.2-1.cdh6.3.2.p0.1605554-el7.parcel.sha1.txt /var/www/html/cloudera-repos/cdh/
+RUN cp /root/cm6/CDH-6.3.2-1.cdh6.3.2.p0.1605554-el7.parcel.sha256 /var/www/html/cloudera-repos/cdh/
+RUN cp /root/cm6/manifest.json /var/www/html/cloudera-repos/cdh/
+
+
+ENTRYPOINT ["/bin/bash", "-c"]
+
+

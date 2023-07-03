@@ -1,0 +1,22 @@
+FROM centos:7
+
+LABEL maintainer="useok"
+LABEL description="Base Image for BigData Cluster"
+
+RUN yum update -y
+RUN yum install wget -y
+RUN yum install vim -y
+RUN yum install openssh-server openssh-clients openssh-askpass -y
+RUN yum install initscripts -y
+RUN yum install net-tools -y 
+RUN yum -y install java-1.8.0-openjdk-devel
+RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_dsa
+RUN cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+RUN ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""
+RUN ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""
+RUN ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
+RUN echo "/usr/sbin/sshd">>~/.bashrc
+
+RUN echo -e "[cloudera-repo]\nname=cloudera-manager\nbaseurl=http://3.35.20.140/cloudera-repos/cm6/\nenabled=1\ngpgcheck=0">>/etc/yum.repos.d/cloudera-manager.repo
+
+ENTRYPOINT ["/bin/bash", "-c"]

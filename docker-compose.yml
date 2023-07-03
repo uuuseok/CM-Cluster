@@ -1,0 +1,65 @@
+version: "3"
+
+services:
+        server01:
+                build:
+                        context: ./
+                        dockerfile: dockerfiles/Dockerfile-server
+                image: centos_server01
+                ports:
+                        - "80:80"
+                        - "7180:7180"
+                        - "7182:7182"
+                        - "7191:7191"
+                        - "9000:9000"
+                        - "9001:9001"
+                privileged: true
+                container_name: hadoop01
+                hostname: server01.hadoop.com
+                environment:
+                        - container=docker
+                volumes:
+                        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+                restart: always
+                command: 
+                        - /usr/sbin/init
+  
+        server02:
+                build:
+                        context: ./
+                        dockerfile: dockerfiles/Dockerfile-agent
+                image: centos_server02
+                privileged: true
+                container_name: hadoop02
+                hostname: server02.hadoop.com
+                environment:
+                        - container=docker
+                volumes:
+                        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+                restart: always
+                links:
+                        - server01:hadoop01
+                depends_on:
+                        - server01          
+                command:
+                        - /usr/sbin/init
+       
+        server03:
+                build:
+                        context: ./
+                        dockerfile: dockerfiles/Dockerfile-agent
+                image: centos_server03
+                privileged: true
+                container_name: hadoop03
+                hostname: server03.hadoop.com
+                environment:
+                        - container=docker
+                volumes:
+                        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+                restart: always
+                links:
+                        - server01:hadoop01
+                depends_on:
+                        - server01
+                command:
+                        - /usr/sbin/init
